@@ -1,0 +1,25 @@
+name: Build IPA
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+
+jobs:
+  build:
+    runs-on: macos-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Compile
+        run: |
+          xcrun -sdk iphoneos clang -arch arm64 -fobjc-arc -miphoneos-version-min=14.0 \
+            -framework UIKit -framework Foundation main.m -o FunApp
+      - name: Package IPA
+        run: |
+          mkdir -p Payload/FunApp.app
+          cp FunApp Payload/FunApp.app/
+          cp Info.plist Payload/FunApp.app/
+          zip -r FunApp.ipa Payload
+      - uses: actions/upload-artifact@v4
+        with:
+          name: FunApp-ipa
+          path: FunApp.ipa
